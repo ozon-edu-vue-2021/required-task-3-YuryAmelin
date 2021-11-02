@@ -17,7 +17,7 @@
             </div>
             <div class="toolbar__actions"></div>
         </div>
-        <div class="content">
+        <div class="content" @click.stop>
             <div
                 v-if="!isUserOpenned"
                 class="legend"
@@ -27,14 +27,16 @@
                         v-if="legend.length > 0"
                         class="legend__items"
                     >
-                        <LegendItem
-                            v-for="(item, index) in legend"
-                            :key="index"
-                            :color="item.color"
-                            :text="item.text"
-                            :counter="item.counter"
-                            class="legend__item"
-                        />
+                        <Draggable v-model="legend">
+                            <LegendItem
+                                v-for="(item, index) in legend"
+                                :key="index"
+                                :color="item.color"
+                                :text="item.text"
+                                :counter="item.counter"
+                                class="legend__item"
+                            />
+                        </Draggable>
                     </div>
                     <span
                         v-else
@@ -42,9 +44,6 @@
                     >
                         Список пуст
                     </span>
-                </div>
-                <div class="legend__chart">
-                    <!-- chart -->
                 </div>
             </div>
             <div
@@ -61,6 +60,9 @@
                 <PersonCard :person="person" />
             </div>
         </div>
+      <div class="legend__chart">
+        <doughnut ref="chart"/>
+      </div>
     </div>
 </template>
 
@@ -68,6 +70,9 @@
 import LegendItem from "./SideMenu/LegendItem.vue";
 import PersonCard from "./SideMenu/PersonCard.vue";
 import legend from "@/assets/data/legend.json";
+import tables from "@/assets/data/tables.json";
+import Draggable from "vuedraggable";
+import { Doughnut } from "vue-chartjs";
 
 export default {
     props: {
@@ -83,22 +88,60 @@ export default {
     components: {
         LegendItem,
         PersonCard,
+        Draggable,
+        Doughnut,
     },
     data() {
         return {
             legend: [],
+            tables: [],
+            counters: [],
         };
     },
     created() {
         this.loadLegend();
+        this.loadTables();
+        this.tables.forEach((table) => {
+          this.counters.push(table.group_id)
+        })
+        this.counters = [...new Set(this.counters)]
+        this.counters.forEach((el, index) => {this.counters[index] = 0})
+        this.tables.forEach((table) => {
+        this.counters[table.group_id]++
+        })
+        this.legend.forEach((el, index) => {el.counter = this.counters[index]})
+    },
+    mounted () {
+        this.makeChart()
     },
     methods: {
         loadLegend() {
             this.legend = legend;
         },
+        loadTables() {
+            this.tables = tables;
+        },
         closeProfile() {
             this.$emit("update:isUserOpenned", false);
         },
+        makeChart() {
+          const chartData = {
+            labels: this.legend.map((legendItem) => legendItem.text),
+            datasets: [
+              {
+                label: 'Легенда',
+                backgroundColor: this.legend.map((legendItem) => legendItem.color),
+                data: this.counters
+              }
+            ]
+          }
+          const options = {
+            legend: {
+              display: false,
+            }
+          }
+          this.$refs.chart.renderChart(chartData, options)
+        }
     },
 };
 </script>
