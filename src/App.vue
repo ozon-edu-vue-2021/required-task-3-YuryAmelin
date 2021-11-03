@@ -11,6 +11,7 @@
 import Map from "./components/Map.vue";
 import SideMenu from "./components/SideMenu.vue";
 import people from "./assets/data/people.json";
+import * as d3 from "d3"
 
 export default {
   name: "App",
@@ -21,7 +22,7 @@ export default {
   data: () => ({
     selectedPerson: null,
     isOpened: false,
-    people: []
+    people: [],
 }),
   created() {
     this.loadPeople();
@@ -30,13 +31,14 @@ export default {
     loadPeople() {
       this.people = people;
     },
-    handleClick(event) {
-      this.selectedPerson = this.people[event.path[3].id]
-      if (this.selectedPerson) {
+    handleClick() {
+      this.isOpened = false
+      const pressedTable = d3.select('g.employer-place.pressed')
+      if (pressedTable._groups[0][0] !== null) {
+        this.selectedPerson = this.people.find(it => it.tableId == pressedTable._groups[0][0].id)
         this.isOpened = true
-      } else {
-        this.isOpened = false
       }
+      pressedTable.classed('pressed', false)
     }
   }
 };

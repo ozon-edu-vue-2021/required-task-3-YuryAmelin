@@ -57,7 +57,7 @@
                     Место пустое
                 </div>
 
-                <PersonCard :person="person" />
+                <PersonCard v-else :person="person" />
             </div>
         </div>
       <div class="legend__chart">
@@ -71,6 +71,7 @@ import LegendItem from "./SideMenu/LegendItem.vue";
 import PersonCard from "./SideMenu/PersonCard.vue";
 import legend from "@/assets/data/legend.json";
 import tables from "@/assets/data/tables.json";
+import people from "../assets/data/people.json"
 import Draggable from "vuedraggable";
 import { Doughnut } from "vue-chartjs";
 
@@ -95,10 +96,12 @@ export default {
         return {
             legend: [],
             tables: [],
+            people:[],
             counters: [],
         };
     },
     created() {
+        this.people = people
         this.loadLegend();
         this.loadTables();
         this.tables.forEach((table) => {
@@ -107,7 +110,9 @@ export default {
         this.counters = [...new Set(this.counters)]
         this.counters.forEach((el, index) => {this.counters[index] = 0})
         this.tables.forEach((table) => {
-        this.counters[table.group_id]++
+          if (this.people.find(it => it.tableId == table._id)) {
+            this.counters[table.group_id]++
+          }
         })
         this.legend.forEach((el, index) => {el.counter = this.counters[index]})
     },

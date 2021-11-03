@@ -19,6 +19,7 @@ import TableSVG from '@/assets/images/workPlace.svg'
 import * as d3 from "d3"
 import legend from "@/assets/data/legend.json"
 import tables from "@/assets/data/tables.json"
+import people from "../assets/data/people.json"
 
 
 export default {
@@ -32,7 +33,9 @@ export default {
             svg: null,
             g: null,
             tables: [],
+            people: [],
             tableSVG: null,
+            svgTablesGroup: null,
         };
     },
     mounted() {
@@ -41,6 +44,7 @@ export default {
       this.tableSVG = d3.select(this.$refs.table)
 
       this.tables = tables
+      this.people = people
 
       if (this.g) {
         this.drawTables()
@@ -64,11 +68,20 @@ export default {
             .attr("transform", `rotate(${table.rotate || 0})`)
             .attr("group_id", table.group_id)
             .html(this.tableSVG.html())
+            .on('click', function () {
+              svgTable.classed('pressed', true)
+            })
             .attr(
                 "fill",
-                legend.find((it) => it.group_id === table.group_id)?.color
-                ??
-                "transparent"
+                function () {
+                  if (!people.find((it) => it.tableId === table._id)) {
+                    return "gray"
+                  } else if (legend.find((it) => it.group_id === table.group_id)?.color) {
+                    return legend.find((it) => it.group_id === table.group_id)?.color
+                  }  else {
+                    return "transparent"
+                  }
+                }
             )
         })
       }
