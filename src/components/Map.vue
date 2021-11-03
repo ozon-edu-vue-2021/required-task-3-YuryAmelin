@@ -68,8 +68,8 @@ export default {
             .attr("transform", `rotate(${table.rotate || 0})`)
             .attr("group_id", table.group_id)
             .html(this.tableSVG.html())
-            .on('click', function () {
-              svgTable.classed('pressed', true)
+            .on('click', () => {
+              this.$emit('select', table._id)
             })
             .attr(
                 "fill",
